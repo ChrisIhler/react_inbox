@@ -1,75 +1,134 @@
 import React, { Component } from 'react';
 import Toolbar from './Components/Toolbar'
 import Message from './Components/Message'
-import MessageList from './Components/MessageList'
 
-import './App.css';
 
 class App extends Component {
   constructor(props){
     super(props)
     this.state = {
       messages: [],
-      selected: []
+      selected: [],
+      expanded: [],
+      compose: false,
+      pendingMessage: {
+        body: "",
+        subject: ""
+      }
     }
   }
 
 async componentDidMount () {
- this.updateState()
- console.log('DidMount',this.state.messages)
+  this.updateState()
 }
 
 updateState = async () => {
   const response = await fetch('http://localhost:8082/api/messages')
   const json = await response.json()
   this.setState({messages: json})
-  console.log('UpdateState',this.state.messages)
-
 }
 
-updateMessage = async (id, command) => {
-  console.log('working')
+updateMessage = async (id, command, input) => {
   const response = await fetch('http://localhost:8082/api/messages',  {
     method: "PATCH",
     body: JSON.stringify({
-      messageIds: [id],
-      command: command
+      messageIds: id,
+      command: command,
+      read: input,
+      label: input
     }),
     headers: {
       'Content-Type': 'application/json',
     }
   })
-  console.log(id)
   const json = await response.json()
-  // const messageUpdate = json.filter( (message) => id === message.id)
-  // const messages = this.state.messages
-  // const indexOfMessageUpdate = messages.indexOf( message.id === id)
-  // messages = messages.splice(indexOfMessageUpdate)
-  // console.log(indexOfMessageUpdate )
   this.setState({...this.state.messages, messages: json})
   this.setState({messages: json})
-  console.log('UpdateState',this.state.messages)
+}
+
+createMessage = async (e) => {
+  e.preventDefault()
+  let message = this.state.pendingMessage
+  const response = await fetch('http://localhost:8082/api/messages', {
+    method: "POST",
+    body: JSON.stringify(
+      message
+    ),
+    headers: {
+      'Content-Type': 'application/json',
+    }
+  })
+  this.updateState()
+}
+
+updatePendingMessage = (property, value) => {
+  this.setState({pendingMessage: { ...this.state.pendingMessage, [property]: value}})
 }
 
 toggleSelect = (id) => {
-  console.log('clicked')
-  this.setState({selected: id})
+  if (this.state.selected.includes(id)) {
+    let newArray = this.state.selected.filter( SelectedID => id !== SelectedID)
+    this.setState({selected: newArray})
+  } else {
+    this.setState({selected: [...this.state.selected, id]})
+  }
 }
 
-onClearselected = () => {
-  this.setState({ selected: [] });
+onSelectButton = () => {
+  if (this.state.selected.length === this.state.messages.length){
+    this.setState({ selected: [] })
+  } else {
+    const allMessageIDs = this.state.messages.map( message => message.id)
+    this.setState({ selected: allMessageIDs})
+  }
 }
+
+toggleExpand = (id) => {
+  if (this.state.expanded.includes(id)) {
+    let newArray = this.state.expanded.filter( expandedID => id !== expandedID)
+    this.setState({expanded: newArray})
+  } else {
+    this.setState({ expanded: [...this.state.expanded, id]})
+  }
+}
+
+toggleCompose = (compose) => {
+  this.setState({compose: !this.state.compose})
+}
+
+
 
   render() {
     return (
       <div className="App">
-      <Toolbar updateState={this.updateState} messages={this.state.messages}></Toolbar>
-
-      {this.state.messages.map( (message) => <Message updateMessage={this.updateMessage} key={message.id} toggleSelect={this.toggleSelect} updateState={this.updateState} message={message}></Message>)}
-      
-      {/* <Message updateState={this.updateState} messages={this.state.messages}></Message> */}
-      <MessageList updateState={this.updateState} messages={this.state.messages}></MessageList>
-      </div>
+        <div className='container'>
+          <Toolbar onSelectButton={this.onSelectButton}
+          updateState={this.updateState} 
+          messages={this.state.messages}
+          updateMessage={this.updateMessage}
+          selectedMessages={this.state.selected}
+          compose={this.state.compose}
+          toggleCompose={this.toggleCompose}
+          createMessage={this.createMessage}
+          pendingMessage={this.state.pendingMessage}
+          updatePendingMessage={this.updatePendingMessage}>
+          </Toolbar>
+          
+          {this.state.messages.map( (message) => 
+            <Message 
+            updateMessage={this.updateMessage} 
+            key={message.id} 
+            toggleSelect={this.toggleSelect}
+            toggleExpand={this.toggleExpand}
+            expanded={this.state.expanded.includes(message.id)}
+            updateState={this.updateState} 
+            message={message}
+            select={this.state.selected.includes(message.id)}>
+            </Message>
+            )
+          }
+        </div>
+      </div>   
     );
   }
 }

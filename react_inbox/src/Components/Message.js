@@ -1,46 +1,48 @@
 import React from 'react'
 
+function rowStyles(read, selected){
+  let style = 'row message'
+  style = read ? `${style} read`  : `${style} unread`
+  style = selected ? `${style} selected`  : `${style}`
+  return style
+}
+
 const Message = (props) => {
   let {subject, read, starred, labels, body, id} = props.message
-  console.log('Message PROPS', props.message)
-
-
-
-  // const element1 = <input type="checkbox" checked={ !!this.person.isSelected } />;
-
 
 return (
-<div>
-  <div className={read ? 'row message read' : "row message unread"} >
-    <div className="col-xs-1">
-      <div className="row">
-        <div className="col-xs-2">
-          <input type="checkbox" 
-          // checked="checked" 
-          onClick={ (e) => props.toggleSelect()}
-          />
-        </div>
-        <div className="col-xs-2">
-          <i onClick={ (e) => props.updateMessage(id, "star")}  className={ starred ? 'star fa fa-star' : 'star fa fa-star-o' }></i>
+  <div >
+    <div className={rowStyles(read, props.select)}>
+      <div className="col-xs-1">
+        <div className="row">
+          <div className="col-xs-2">
+            <input type="checkbox" 
+            checked={props.select} 
+            onChange={ (e) => props.toggleSelect(id)}/>
+          </div>
+          <div className="col-xs-2">
+            <i onClick={ (e) => props.updateMessage([id], "star")}  className={ starred ? 'star fa fa-star' : 'star fa fa-star-o' }></i>
+          </div>
         </div>
       </div>
+      <div className="col-xs-11" onClick={ (e) => props.toggleExpand(id)}>
+      { labels ? labels.map( (label,id) => <span key={id} className="label label-warning">{label}</span>): null }
+        <a htmlFor="#">
+          {subject} 
+        </a>
+      </div>
     </div>
-    <div className="col-xs-11">
-    { labels ? labels.map( (lable) => <span className="label label-warning">{lable}</span>): null }
-      <a htmlFor="#">
-        {subject} 
-      </a>
+
+    { props.expanded ?
+    <div className="row message-body">
+      <div className="col-xs-11 col-xs-offset-1">
+        {body}
+      </div>
     </div>
+    : null
+    }
   </div>
-
-
-
-
-</div>
-)
-
-
-
+  )
 }
 
 export default Message
