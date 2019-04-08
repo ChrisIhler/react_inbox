@@ -1,8 +1,0 @@
-I had forgot how to make a unique key number for when I map and rendor a component. Thankfully .map has an automaded
-indexing accumulater that you can use by just naming the 2nd param as id and then putting that
-id in the key key={id}
-
-Also check boxes want a onChange handler rather than an onClick handler yet you get a console error but
-the functionality still seems to work. 
-
-{ labels ? labels.map( (label,id) => <span key={id} className="label label-warning">{label}</span>): null }
