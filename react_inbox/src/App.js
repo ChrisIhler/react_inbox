@@ -23,13 +23,13 @@ async componentDidMount () {
 }
 
 updateState = async () => {
-  const response = await fetch('https://blooming-springs-92699.herokuapp.com/api/messages')
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/messages`)
   const json = await response.json()
   this.setState({messages: json})
 }
 
 updateMessage = async (id, command, input) => {
-  const response = await fetch('https://blooming-springs-92699.herokuapp.com/api/messages',  {
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/messages`,  {
     method: "PATCH",
     body: JSON.stringify({
       messageIds: id,
@@ -49,7 +49,7 @@ updateMessage = async (id, command, input) => {
 createMessage = async (e) => {
   e.preventDefault()
   let message = this.state.pendingMessage
-  const response = await fetch('https://blooming-springs-92699.herokuapp.com/api/messages', {
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/api/messages`, {
     method: "POST",
     body: JSON.stringify(
       message
